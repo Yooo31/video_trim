@@ -1,6 +1,9 @@
 from moviepy.editor import *
 import os
 import shutil
+from moviepy.config import change_settings
+change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
+
 
 path_to_cut_folder = "cut"
 path_to_finished_folder = "finished"
