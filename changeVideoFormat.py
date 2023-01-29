@@ -1,6 +1,6 @@
 from moviepy.editor import *
 
-file = "/home/yoan/Documents/tiktok/test.mp4"
+file = "new/newVideo.mp4"
 
 clip = VideoFileClip(file)
 aspect_ratio = clip.aspect_ratio
