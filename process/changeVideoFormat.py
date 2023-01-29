@@ -1,7 +1,7 @@
 from moviepy.editor import *
 
 def changeFormat():
-  file = "new/newVideo.mp4"
+  file = "../new/newVideo.mp4"
 
   clip = VideoFileClip(file)
   # aspect_ratio = clip.aspect_ratio
@@ -13,6 +13,6 @@ def changeFormat():
   final_clip = CompositeVideoClip([black_bg, resized_clip.set_pos(('center', 'center'))])
   final_clip = final_clip.set_duration(resized_clip.duration)
 
-  final_clip.write_videofile("output.mp4")
+  final_clip.write_videofile("../new/output.mp4")
 
 

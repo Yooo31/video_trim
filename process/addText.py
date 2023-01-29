@@ -3,8 +3,8 @@ import random
 import os
 import re
 import shutil
-from moviepy.config import change_settings
-change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
+# from moviepy.config import change_settings
+# change_settings({"IMAGEMAGICK_BINARY": "/usr/bin/convert"})
 
 def randomColor():
   r = random.randint(200, 255)
@@ -16,8 +16,8 @@ def randomColor():
 def addText():
   background = randomColor()
 
-  path_to_cut_folder = "cut"
-  path_to_finished_folder = "finished"
+  path_to_cut_folder = "../cut"
+  path_to_finished_folder = "../finished"
 
   for i, file in enumerate(os.listdir(path_to_cut_folder)):
     video_path = os.path.join(path_to_cut_folder, file)
