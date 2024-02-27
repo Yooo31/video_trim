@@ -18,11 +18,11 @@ def getVideoTiming():
       timing = file.read()
   return int(timing)
 
-def cutVideo(time):
+def cutVideo():
     clip = VideoFileClip("../new/output.mp4")
     duration = clip.duration
 
-    part_duration = time
+    part_duration = getVideoTiming()
 
     for i in range(int(duration/part_duration)+1):
         start_time = i*part_duration
