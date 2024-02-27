@@ -1,8 +1,8 @@
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
-from process import cutVideos
 from process.downloadVideo import VideoDownloader
+from process.videoEditing import VideoEditor
 
 import os
 from dotenv import load_dotenv
@@ -25,15 +25,19 @@ def startButton(update, context):
 
     if query.data == "settings":
       chat_id = query.message.chat_id
-      currentTiming = cutVideos.getVideoTiming()
+      currentTiming = VideoEditor.get_video_timing()
+
       context.bot.send_message(chat_id=chat_id, text="Quelle est la nouvelle durée de chaque vidéo ? Durée actuelle : " + str(currentTiming) + " secondes.")
       context.user_data["state"] = "WAITING_FOR_TIMING"
+
       return "WAITING_FOR_TIMING"
 
     elif query.data == "starting":
       chat_id = query.message.chat_id
+
       context.bot.send_message(chat_id=chat_id, text="Envoyer l'URL de la vidéo")
       context.user_data["state"] = "WAITING_FOR_URL"
+
       return "WAITING_FOR_URL"
 
 def handle_text(update, context):
@@ -44,7 +48,7 @@ def handle_text(update, context):
       timing = update.message.text
       chat_id = update.message.chat_id
 
-      if cutVideos.setVideoTiming(timing):
+      if VideoEditor.set_video_timing(timing):
         message = f"La durée de chaque vidéo a été paramétrée à {timing}"
       else:
         message = "La durée de chaque vidéo n'a pas été paramétrée correctement. Veuillez saisir un entier inférieur ou égal à 180."
