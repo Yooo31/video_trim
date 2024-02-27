@@ -2,6 +2,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
 from process import cutVideos
+from process.downloadVideo import VideoDownloader
 
 import os
 from dotenv import load_dotenv
@@ -54,7 +55,22 @@ def handle_text(update, context):
     elif state == "WAITING_FOR_URL":
       url = update.message.text
       chat_id = update.message.chat_id
-      context.bot.send_message(chat_id=chat_id, text=f"La vidéo a été téléchargée à partir de l'URL suivante : {url}")
+      downloader = VideoDownloader(url)
+
+      if downloader.validate_url():
+        context.bot.send_message(chat_id=chat_id, text="Vidéo valide, téléchargement en cours...")
+
+        try:
+          downloader.download_video()
+          context.bot.send_message(chat_id=chat_id, text="Vidéo téléchargée avec succès!")
+
+        except Exception as e:
+            print("Erreur lors du téléchargement de la vidéo :", e)
+            context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du téléchargement de la vidéo.")
+
+      else:
+            context.bot.send_message(chat_id=chat_id, text="L'URL de la vidéo est invalide. Veuillez saisir une URL valide.")
+
       context.user_data["state"] = None
 
     else:
@@ -69,9 +85,6 @@ def main():
   dp.add_handler(CallbackQueryHandler(startButton))
 
   dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_text))
-
-  # dp.add_handler(MessageHandler(Filters.text, handle_message))
-  # dp.add_error_handler(error)
 
   updater.start_polling()
   updater.idle()
