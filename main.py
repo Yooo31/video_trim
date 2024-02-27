@@ -2,7 +2,7 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
 from process.downloadVideo import VideoDownloader
-from process.videoEditing import VideoEditor
+from process.videoEditor import VideoEditor
 
 import os
 from dotenv import load_dotenv
@@ -67,6 +67,9 @@ def handle_text(update, context):
         try:
           downloader.download_video()
           context.bot.send_message(chat_id=chat_id, text="Vidéo téléchargée avec succès!")
+          VideoEditor.change_format();
+          VideoEditor.cut_video();
+          VideoEditor.add_text();
 
         except Exception as e:
             print("Erreur lors du téléchargement de la vidéo :", e)
