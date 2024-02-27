@@ -3,6 +3,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageH
 
 from process.downloadVideo import VideoDownloader
 from process.videoEditor import VideoEditor
+from process.videoSender import VideoSender
 
 import os
 from dotenv import load_dotenv
@@ -67,16 +68,33 @@ def handle_text(update, context):
         try:
           downloader.download_video()
           context.bot.send_message(chat_id=chat_id, text="Vidéo téléchargée avec succès!")
-          VideoEditor.change_format();
-          VideoEditor.cut_video();
-          VideoEditor.add_text();
-
         except Exception as e:
             print("Erreur lors du téléchargement de la vidéo :", e)
             context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du téléchargement de la vidéo.")
 
+        try:
+          VideoEditor.change_format()
+        except Exception as e:
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du changement du format")
+
+        try:
+          VideoEditor.cut_video()
+        except Exception as e:
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du découpage")
+
+        try:
+          VideoSender.send_videos(context.bot, chat_id)
+        except Exception as e:
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors de l'envoie des vidéos")
+
+        try:
+          title, author = downloader.get_title_and_author();
+          context.bot.send_message(chat_id=chat_id, text="🤳 Crédits: " + title + " | " + author + "\nProvenance : YouTube 📺")
+        except Exception as e:
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors de la récupération des informations")
+
       else:
-            context.bot.send_message(chat_id=chat_id, text="L'URL de la vidéo est invalide. Veuillez saisir une URL valide.")
+        context.bot.send_message(chat_id=chat_id, text="L'URL de la vidéo est invalide. Veuillez saisir une URL valide.")
 
       context.user_data["state"] = None
 
