@@ -1,5 +1,3 @@
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
-from telegram.utils.helpers import escape_markdown
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
 
@@ -9,7 +7,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-
 
 def start(update, context):
   keyboard = [
@@ -21,16 +18,38 @@ def start(update, context):
   update.message.reply_text("Que voulez vous faire ?", reply_markup=reply_markup)
 
 def startButton(update, context):
-  query = update.callback_query
+    query = update.callback_query
 
-  chat_id = query.message.chat_id
-  print(chat_id)
+    if query.data == "settings":
+      chat_id = query.message.chat_id
+      context.bot.send_message(chat_id=chat_id, text="Quelle est la nouvelle durée de chaque vidéo ?")
+      context.user_data["state"] = "WAITING_FOR_TIMING"
+      return "WAITING_FOR_TIMING"
 
-  if query.data == "settings" :
-    print("Settings selected")
+    elif query.data == "starting":
+      chat_id = query.message.chat_id
+      context.bot.send_message(chat_id=chat_id, text="Envoyer l'URL de la vidéo")
+      context.user_data["state"] = "WAITING_FOR_URL"
+      return "WAITING_FOR_URL"
 
-  elif query.data == "starting" :
-    print("Starting selected")
+def handle_text(update, context):
+    state = context.user_data.get("state")
+    print(state)
+
+    if state == "WAITING_FOR_TIMING":
+      timing = update.message.text
+      chat_id = update.message.chat_id
+      context.bot.send_message(chat_id=chat_id, text=f"La durée de chaque vidéo a été paramétrée à {timing}")
+      context.user_data["state"] = None
+
+    elif state == "WAITING_FOR_URL":
+      url = update.message.text
+      chat_id = update.message.chat_id
+      context.bot.send_message(chat_id=chat_id, text=f"La vidéo a été téléchargée à partir de l'URL suivante : {url}")
+      context.user_data["state"] = None
+
+    else:
+      update.message.reply_text("Veuillez choisir une option à partir des boutons ci-dessus.")
 
 def main():
   updater = Updater(BOT_TOKEN, use_context=True)
@@ -39,6 +58,8 @@ def main():
 
   dp.add_handler(CommandHandler("start", start))
   dp.add_handler(CallbackQueryHandler(startButton))
+
+  dp.add_handler(MessageHandler(Filters.text & ~Filters.command, handle_text))
 
   # dp.add_handler(MessageHandler(Filters.text, handle_message))
   # dp.add_error_handler(error)
