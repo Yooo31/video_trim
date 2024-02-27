@@ -1,5 +1,23 @@
 from moviepy.editor import *
 
+def setVideoTiming(timing):
+    try:
+        timing = int(timing)
+        if timing <= 180:
+
+            with open(os.path.join("process", "timing.txt"), "w") as file:
+                file.write(str(timing))
+            return True
+        else:
+            return False
+    except ValueError:
+        return False
+
+def getVideoTiming():
+  with open(os.path.join("process", "timing.txt"), "r") as file:
+      timing = file.read()
+  return int(timing)
+
 def cutVideo(time):
     clip = VideoFileClip("../new/output.mp4")
     duration = clip.duration
