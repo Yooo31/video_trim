@@ -3,7 +3,7 @@ import glob
 class VideoSender:
   @staticmethod
   def send_videos(bot, chat_id):
-    videos_path = "./cut/*.mp4"
+    videos_path = "./finished/*.mp4"
     video_files = glob.glob(videos_path)
 
     if video_files:

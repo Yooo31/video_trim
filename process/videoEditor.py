@@ -56,7 +56,7 @@ class VideoEditor:
 
   @staticmethod
   def cut_video():
-    clip = VideoFileClip("../new/output.mp4")
+    clip = VideoFileClip("./new/output.mp4")
     total_duration = clip.duration
     clip_duration = VideoEditor.get_video_timing()
     rollback = 3
@@ -90,8 +90,8 @@ class VideoEditor:
 
     background = randomColor()
 
-    path_to_cut_folder = "/home/yoan/Project/video_trim/cut"
-    path_to_finished_folder = "/home/yoan/Project/video_trim/finished"
+    path_to_cut_folder = "./cut"
+    path_to_finished_folder = "./finished"
 
     for i, file in enumerate(os.listdir(path_to_cut_folder)):
       video_path = os.path.join(path_to_cut_folder, file)

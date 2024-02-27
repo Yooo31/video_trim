@@ -43,7 +43,7 @@ def startButton(update, context):
       context.bot.send_message(chat_id=chat_id, text="Quelle est la nouvelle durée de chaque vidéo ? Durée actuelle : " + str(currentTiming) + " secondes.")
       context.user_data["state"] = "WAITING_FOR_TIMING"
 
-      return "WAITING_FOR_TIMING"
+      return
 
     elif query.data == "starting":
       chat_id = query.message.chat_id
@@ -51,13 +51,15 @@ def startButton(update, context):
       context.bot.send_message(chat_id=chat_id, text="Envoyer l'URL de la vidéo")
       context.user_data["state"] = "WAITING_FOR_URL"
 
-      return "WAITING_FOR_URL"
+      return
 
     elif query.data == "last_video":
       message = getInformations()
 
       chat_id = query.message.chat_id
       context.bot.send_message(chat_id=chat_id, text=message)
+
+      start(update, context)
 
 def handle_text(update, context):
     state = context.user_data.get("state")
@@ -73,6 +75,7 @@ def handle_text(update, context):
 
       context.bot.send_message(chat_id=chat_id,  text= message)
       context.user_data["state"] = None
+
       start(update, context)
 
     elif state == "WAITING_FOR_URL":
@@ -87,31 +90,46 @@ def handle_text(update, context):
           downloader.download_video()
           context.bot.send_message(chat_id=chat_id, text="Vidéo téléchargée avec succès!")
         except Exception as e:
+          print("###ERREUR### ", e)
           context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du téléchargement de la vidéo.")
 
         try:
           VideoEditor.change_format()
+          context.bot.send_message(chat_id=chat_id, text="Format changé avec succès!")
         except Exception as e:
+          print("###ERREUR### ", e)
           context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du changement du format")
 
         try:
           VideoEditor.cut_video()
+          context.bot.send_message(chat_id=chat_id, text="Découpage des vidéos réussi!")
         except Exception as e:
+          print("###ERREUR### ", e)
           context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du découpage")
+
+        try:
+          VideoEditor.add_text()
+          context.bot.send_message(chat_id=chat_id, text="Ajout du text réussi!")
+        except Exception as e:
+          print("###ERREUR### ", e)
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors de l'ajout du text")
 
         try:
           VideoSender.send_videos(context.bot, chat_id)
         except Exception as e:
+          print("###ERREUR### ", e)
           context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors de l'envoie des vidéos")
 
         try:
           title, author = downloader.get_title_and_author();
           context.bot.send_message(chat_id=chat_id, text="🤳 Crédits: " + title + " | " + author + "\nProvenance : YouTube 📺")
         except Exception as e:
+          print("###ERREUR### ", e)
           context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors de la récupération des informations")
 
       else:
         context.bot.send_message(chat_id=chat_id, text="L'URL de la vidéo est invalide. Veuillez saisir une URL valide.")
+        start(update, context)
 
       context.user_data["state"] = None
 
