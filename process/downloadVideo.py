@@ -1,10 +1,19 @@
 from pytube import YouTube
 from datetime import datetime
-import json
+import json, os
 
 class VideoDownloader:
   def __init__(self, url):
     self.url = url
+
+  def delete_folder_contents(folder_path):
+    if os.path.isdir(folder_path):
+      for filename in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, filename)
+        if os.path.isfile(file_path):
+          os.remove(file_path)
+        elif os.path.isdir(file_path):
+          VideoDownloader.delete_folder_contents(file_path)
 
   def validate_url(self):
     try:
@@ -30,6 +39,10 @@ class VideoDownloader:
     return title, author
 
   def download_video(self):
+    VideoDownloader.delete_folder_contents("./new")
+    VideoDownloader.delete_folder_contents("./finished")
+    VideoDownloader.delete_folder_contents("./cut")
+
     video = YouTube(self.url)
     video.streams.filter(file_extension='mp4').first().download(output_path="./new", filename='newVideo.mp4')
 
