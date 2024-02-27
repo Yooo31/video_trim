@@ -3,6 +3,7 @@ import random
 import os
 import re
 import shutil
+import json
 
 class VideoEditor:
   def __init__(self):
@@ -14,8 +15,12 @@ class VideoEditor:
       timing = int(timing)
 
       if timing <= 180:
-        with open(os.path.join("process", "timing.txt"), "w") as file:
-          file.write(str(timing))
+        with open("informations.json", "r+") as file:
+          data = json.load(file)
+          data["timing"] = timing
+          file.seek(0)
+          json.dump(data, file, indent=2)
+
         return True
 
       else:
@@ -26,9 +31,12 @@ class VideoEditor:
 
   @staticmethod
   def get_video_timing():
-    with open(os.path.join("process", "timing.txt"), "r") as file:
-      timing = file.read()
+    with open("informations.json", "r") as file:
+      data = json.load(file)
+      timing = data["timing"]
+
     return int(timing)
+
 
   @staticmethod
   def change_format():

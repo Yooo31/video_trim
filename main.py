@@ -1,21 +1,33 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageHandler, Filters, CallbackContext
 
 from process.downloadVideo import VideoDownloader
 from process.videoEditor import VideoEditor
 from process.videoSender import VideoSender
 
-import os
 from dotenv import load_dotenv
-
+import os
+import json
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
+def getInformations():
+  with open("informations.json", "r") as file:
+    data = json.load(file)
+    timing = data["timing"]
+    last_url = data["last_url"]
+    last_date = data["last_date"]
+    title = data["title"]
+    author = data["author"]
+
+  return f"Vidéo précédente : \n\n📅 Date : {last_date}\n🔗 URL : {last_url}\n🎬 Durée : {timing} secondes\n🤳 Crédits : {title} | {author}\n\n"
+
 def start(update, context):
   keyboard = [
             [InlineKeyboardButton("⚙️ Paramétres ⚙️", callback_data="settings")],
-            [InlineKeyboardButton("🎬 Commencer 🎬", callback_data="starting")]
+            [InlineKeyboardButton("🎬 Commencer 🎬", callback_data="starting")],
+            [InlineKeyboardButton("❓ Dernière Vidéo ❓", callback_data="last_video")]
   ]
 
   reply_markup = InlineKeyboardMarkup(keyboard)
@@ -41,9 +53,14 @@ def startButton(update, context):
 
       return "WAITING_FOR_URL"
 
+    elif query.data == "last_video":
+      message = getInformations()
+
+      chat_id = query.message.chat_id
+      context.bot.send_message(chat_id=chat_id, text=message)
+
 def handle_text(update, context):
     state = context.user_data.get("state")
-    print(state)
 
     if state == "WAITING_FOR_TIMING":
       timing = update.message.text
@@ -56,6 +73,7 @@ def handle_text(update, context):
 
       context.bot.send_message(chat_id=chat_id,  text= message)
       context.user_data["state"] = None
+      start(update, context)
 
     elif state == "WAITING_FOR_URL":
       url = update.message.text
@@ -69,8 +87,7 @@ def handle_text(update, context):
           downloader.download_video()
           context.bot.send_message(chat_id=chat_id, text="Vidéo téléchargée avec succès!")
         except Exception as e:
-            print("Erreur lors du téléchargement de la vidéo :", e)
-            context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du téléchargement de la vidéo.")
+          context.bot.send_message(chat_id=chat_id, text="Une erreur est survenue lors du téléchargement de la vidéo.")
 
         try:
           VideoEditor.change_format()
@@ -99,7 +116,8 @@ def handle_text(update, context):
       context.user_data["state"] = None
 
     else:
-      update.message.reply_text("Veuillez choisir une option à partir des boutons ci-dessus.")
+      update.message.reply_text("Veuillez choisir une option à partir des boutons ci-dessous.")
+      start(update, context)
 
 def main():
   updater = Updater(BOT_TOKEN, use_context=True)
