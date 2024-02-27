@@ -18,19 +18,9 @@ class VideoDownloader:
     author = video.author
     return title, author
 
-  def download_video_with_subtitles(self, output_path='./temp'):
+  def download_video(self):
     video = YouTube(self.url)
-
-    captions = video.captions
-    subtitle = captions.get_by_language_code('en')
-
-    if subtitle:
-        video.streams.filter(file_extension='mp4').first().download(output_path=output_path, filename='newVideo.mp4')
-        subtitle.download(output_path=output_path, filename='subtitles')
-        print("La vidéo et les sous-titres en français ont été téléchargés avec succès.")
-    else:
-      video.streams.filter(file_extension='mp4').first().download(output_path=output_path, filename='newVideo.mp4')
-      print("La vidéo a été téléchargée avec succès (sans sous-titres).")
+    video.streams.filter(file_extension='mp4').first().download(output_path="./new", filename='newVideo.mp4')
 
 if __name__ == '__main__':
     url = input("Entrez l'URL de la vidéo YouTube : ")
@@ -38,10 +28,10 @@ if __name__ == '__main__':
 
     if downloader.validate_url():
         title, author = downloader.get_title_and_author()
-        print(f"Crédit : {title} | {author}")
+        downloader.download_video()
 
-        output_path = './temp'  # Répertoire de téléchargement
-        downloader.download_video_with_subtitles(output_path)
+        print(f"Crédit : {title} | {author}")
         print("La vidéo a été téléchargée avec succès.")
+
     else:
         print("L'URL fournie est invalide.")
